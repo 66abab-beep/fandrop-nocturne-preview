@@ -24,7 +24,13 @@ function describe(index) {
 }
 function turn(index) {
   if (index < 0 || index >= photos.length) return;
-  track.scrollLeft = track.clientWidth * index;
+  // Recreate the scroll box to cancel any ongoing native swipe momentum.
+  const restoreFocus = document.activeElement === track;
+  track.style.display = 'none';
+  track.getBoundingClientRect();
+  track.style.display = '';
+  track.scrollTo({left: index * track.clientWidth, behavior: 'instant'});
+  if (restoreFocus) track.focus({preventScroll:true});
   describe(index);
 }
 track.addEventListener('scroll', () => {
@@ -47,9 +53,9 @@ function filter(type) {
     card.className = 'card';
     card.innerHTML = '<img loading="lazy" alt="" src="assets/'+id+'.webp"><span class="meta">PLATE '+number(index+1)+' / '+category+'</span><strong>'+zh+'</strong>';
     card.onclick = () => {
-      turn(index);
       q('#reader').scrollIntoView();
       track.focus({preventScroll:true});
+      turn(index);
     };
     q('.grid').append(card);
   });
